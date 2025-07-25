@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
-	"golang-test/internal/config"
-	"golang-test/internal/lib/logger/sl"
-	"golang-test/internal/storage/sqlite"
 	"log/slog"
 	"os"
+	"url-shorter/internal/config"
+	"url-shorter/internal/lib/logger/sl"
+	"url-shorter/internal/storage/sqlite"
+	mwLogger "url-shorter/internal/http-server/middleware/logger"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 const (
@@ -32,13 +36,26 @@ func main() {
 	storage, err := sqlite.New(cfg.StoragePath)
 
 	if err != nil {
+		fmt.Println(">>>", cfg.StoragePath)
 		log.Error("failed to init storage", sl.Err(err))
-		os.Exit(1)
+		os.Exit(4)
 	}
 
 	_ = storage
 
-	// TODO: init router: chi, "chi render"
+	// TODO: init router: chi, "chi render" VV
+
+	router := chi.NewRouter()
+
+	// middleware
+
+	router.Use(middleware.RequestID)
+	// router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+	router.Use(mwLogger.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
+
 
 	// TODO: run server
 }
