@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	httprequest "url-shorter/internal/lib/api/http-request"
+	httpresponse "url-shorter/internal/lib/api/http-response"
 	resp "url-shorter/internal/lib/api/response"
 	"url-shorter/internal/lib/logger/sl"
 	"url-shorter/internal/lib/random"
@@ -21,16 +23,6 @@ type URLSaver interface {
 	SaveURL(urlToSave string, alias string) (int64, error)
 }
 
-type Request struct {
-	URL   string `json:"url" validate: "required,url"`
-	Alias string `json:"alias,omitempty"`
-}
-
-type Response struct {
-	resp.Response
-	Alias string `json:"alias,omitempty"`
-}
-
 func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.url.save.New"
@@ -40,7 +32,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		var req Request
+		var req httprequest.Request
 
 		err := render.DecodeJSON(r.Body, &req)
 
@@ -92,5 +84,5 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
 func responseOk(w http.ResponseWriter, r *http.Request, alias string) {
 
-	render.JSON(w, r, Response{Response: resp.OK(), Alias: alias})
+	render.JSON(w, r, httpresponse.Response{Response: resp.OK(), Alias: alias})
 }
