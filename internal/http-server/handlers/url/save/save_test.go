@@ -14,6 +14,7 @@ import (
 
 	"url-shorter/internal/http-server/handlers/url/save"
 	"url-shorter/internal/http-server/handlers/url/save/mocks"
+	httpresponse "url-shorter/internal/lib/api/http-response"
 	"url-shorter/internal/lib/logger/handlers/slogdiscard"
 )
 
@@ -84,7 +85,7 @@ func TestSaveHandler(t *testing.T) {
 
 			body := rr.Body.String()
 
-			var resp save.Response
+			var resp httpresponse.Response
 
 			require.NoError(t, json.Unmarshal([]byte(body), &resp))
 
